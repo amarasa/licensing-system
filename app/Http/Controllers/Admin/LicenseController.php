@@ -47,10 +47,13 @@ class LicenseController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(License $license)
     {
-        //
+        // Eager load the plugin and activations for the license.
+        $license->load('plugin', 'activations');
+        return view('admin.licenses.show', compact('license'));
     }
+
 
     // Show the form to edit an existing license
     public function edit(License $license)
