@@ -92,4 +92,23 @@ class PluginController extends Controller
 
         return view('admin.plugins.show', compact('plugin', 'latestVersion'));
     }
+
+    public function releases(Plugin $plugin)
+    {
+        // Fetch *all* releases for this plugin
+        $allReleases = [];
+        if ($plugin->github_repo) {
+            $response = Http::withHeaders([
+                'Accept' => 'application/vnd.github.v3+json'
+            ])->get("https://api.github.com/repos/{$plugin->github_repo}/releases");
+            if ($response->successful()) {
+                $allReleases = $response->json();
+            }
+        }
+
+        return view('admin.plugins.releases', [
+            'plugin' => $plugin,
+            'releases' => $allReleases
+        ]);
+    }
 }

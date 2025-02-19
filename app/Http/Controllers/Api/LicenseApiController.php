@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use App\Models\Plugin;
 use App\Models\License;
+use App\Models\Setting;
 use Carbon\Carbon;
 
 class LicenseApiController extends Controller
@@ -30,27 +31,72 @@ class LicenseApiController extends Controller
         $license = License::where('license_key', $data['license_key'])
             ->where('plugin_id', $plugin->id)
             ->first();
-
         if (!$license) {
             return response()->json(['error' => 'License not found'], 404);
         }
-
         if ($license->status !== 'active') {
             return response()->json(['error' => 'License is not active'], 403);
         }
 
-        // Record the activation for this domain if not already recorded.
+        // Parse the provided domain (only consider host portion).
+        $providedDomain = strtolower(parse_url($data['domain'], PHP_URL_HOST));
+
+        // Retrieve dev extensions from settings.
+        $rawDevExtensions = Setting::getValue('dev_extensions', 'localhost,.local,.test,.dev,.loc');
+        $decoded = json_decode($rawDevExtensions, true);
+        if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+            $devExtensions = array_map(function ($item) {
+                return strtolower($item['value'] ?? '');
+            }, $decoded);
+        } else {
+            $devExtensions = array_map('trim', explode(',', strtolower($rawDevExtensions)));
+        }
+
+        // Determine if the provided domain is a development domain.
+        $isDevDomain = false;
+        foreach ($devExtensions as $ext) {
+            if (strpos($providedDomain, $ext) !== false) {
+                $isDevDomain = true;
+                break;
+            }
+        }
+
+        // Count production activations for this license.
+        // Production activations: those whose domain host does NOT contain any dev extension.
+        $productionActivations = $license->activations->filter(function ($activation) use ($devExtensions) {
+            $host = strtolower(parse_url($activation->domain, PHP_URL_HOST));
+            foreach ($devExtensions as $ext) {
+                if (strpos($host, $ext) !== false) {
+                    return false;
+                }
+            }
+            return true;
+        });
+
+        // Check if the provided domain is already activated.
+        $existingActivation = $license->activations->first(function ($activation) use ($providedDomain) {
+            $host = strtolower(parse_url($activation->domain, PHP_URL_HOST));
+            return $host === $providedDomain;
+        });
+
+        // If the domain is production (i.e. not a dev domain) and is new,
+        // enforce the domain limit.
+        if (!$isDevDomain && !$existingActivation) {
+            if ($license->domain_limit > 0 && $productionActivations->count() >= $license->domain_limit) {
+                return response()->json(['error' => 'Activation limit reached for production domains'], 403);
+            }
+        }
+
+        // Record the activation if not already recorded.
         $activation = $license->activations()->firstOrCreate(
             ['domain' => $data['domain']],
             ['activated_at' => now()]
         );
-
-        // Ensure 'activated_at' is a Carbon instance before formatting.
         $activatedAt = $activation->activated_at instanceof Carbon
             ? $activation->activated_at
             : Carbon::parse($activation->activated_at);
 
-        // Fetch the latest release data from GitHub using the stored GitHub repository.
+        // Fetch the latest release data from GitHub dynamically using the plugin's GitHub repo.
         $githubRepo = $plugin->github_repo; // e.g., "amarasa/querycraft"
         $githubResponse = Http::withHeaders([
             'Accept' => 'application/vnd.github.v3+json'
@@ -59,13 +105,10 @@ class LicenseApiController extends Controller
         if (!$githubResponse->successful()) {
             return response()->json(['error' => 'Unable to fetch release information'], 500);
         }
-
         $releaseData = $githubResponse->json();
-
-        // Build a download URL using the standard GitHub release URL format.
         $tag = $releaseData['tag_name'];
         $downloadUrl = "https://github.com/{$githubRepo}/archive/refs/tags/{$tag}.zip";
-        $releaseVersion = ltrim($tag, 'v'); // Remove leading 'v' for comparison if needed
+        $releaseVersion = ltrim($tag, 'v');
 
         // Build update metadata with required top-level keys.
         $updateData = [
@@ -74,9 +117,9 @@ class LicenseApiController extends Controller
             'download_url' => $downloadUrl,
             'sections'     => [
                 'changelog'   => $releaseData['body'] ?? 'No changelog provided.',
-                'description' => $plugin->description, // Use the stored description
+                'description' => $plugin->description,
             ],
-            'author'       => $plugin->author, // Use the stored author
+            'author'       => $plugin->author,
             'license_info' => [
                 'license_key' => $license->license_key,
                 'status'      => $license->status,

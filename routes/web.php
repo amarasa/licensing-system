@@ -15,6 +15,8 @@ Route::get('/dashboard', function () {
 
 Route::middleware('auth')->prefix('admin')->group(function () {
     Route::resource('plugins', PluginController::class);
+    Route::get('plugins/{plugin}/releases', [\App\Http\Controllers\Admin\PluginController::class, 'releases'])
+        ->name('plugins.releases');
     Route::resource('licenses', LicenseController::class);
     Route::resource('activations', ActivationController::class);
     Route::get('settings', [\App\Http\Controllers\Admin\SettingsController::class, 'index'])->name('settings.index');
