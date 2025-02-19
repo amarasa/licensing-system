@@ -8,6 +8,8 @@
     @vite('resources/css/app.css')
     <!-- Toastr CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@yaireo/tagify/dist/tagify.css">
+
 </head>
 
 <body class="bg-gray-100">
@@ -16,6 +18,8 @@
             <a href="{{ url('/admin/plugins') }}" class="text-blue-500 hover:underline">Plugins</a>
             <a href="{{ url('/admin/licenses') }}" class="ml-4 text-blue-500 hover:underline">Licenses</a>
             <a href="{{ url('/admin/activations') }}" class="ml-4 text-blue-500 hover:underline">Activations</a>
+            <a href="{{ route('settings.index') }}" class="ml-4 text-blue-500 hover:underline">Settings</a>
+
         </nav>
         <div class="bg-white shadow rounded p-4">
             @yield('content')
@@ -28,6 +32,9 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Toastr JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+    <!-- Tagify JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@yaireo/tagify"></script>
 
     <!-- Custom Script for Delete Confirmation and Toastr -->
     <script>
