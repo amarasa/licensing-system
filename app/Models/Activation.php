@@ -11,6 +11,10 @@ class Activation extends Model
 
     protected $fillable = ['license_id', 'domain', 'activated_at'];
 
+    protected $casts = [
+        'activated_at' => 'datetime',
+    ];
+
     public function license()
     {
         return $this->belongsTo(License::class);

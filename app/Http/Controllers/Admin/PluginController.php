@@ -3,79 +3,93 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Plugin;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 
 class PluginController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        // Retrieve all plugins from the database.
         $plugins = Plugin::all();
-
-        // Return the view with the plugins data.
         return view('admin.plugins.index', compact('plugins'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         return view('admin.plugins.create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        // Validate the input data
         $data = $request->validate([
-            'name' => 'required|string|max:255',
-            'slug' => 'required|string|max:255|unique:plugins,slug',
-            'current_version' => 'nullable|string|max:50',
+            'name'            => 'required|string|max:255',
+            'slug'            => 'required|string|max:255|unique:plugins,slug',
+            'current_version' => 'nullable|string|max:50', // Optional: you may eventually remove this field.
+            'github_repo'     => 'required|string',
+            'author'          => 'required|string|max:255',
+            'description'     => 'required|string',
         ]);
 
-        // Create the plugin record
         Plugin::create($data);
 
-        // Redirect back to the plugins list with a success message
         return redirect()->route('plugins.index')->with('success', 'Plugin created successfully!');
     }
 
     /**
-     * Display the specified resource.
+     * Show the form for editing an existing plugin.
      */
-    public function show(string $id)
+    public function edit(Plugin $plugin)
     {
-        //
+        return view('admin.plugins.edit', compact('plugin'));
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Update the plugin with new data.
      */
-    public function edit(string $id)
+    public function update(Request $request, Plugin $plugin)
     {
-        //
+        $data = $request->validate([
+            'name'            => 'required|string|max:255',
+            'slug'            => 'required|string|max:255|unique:plugins,slug,' . $plugin->id,
+            'current_version' => 'nullable|string|max:50',
+            'github_repo'     => 'required|string',
+            'author'          => 'required|string|max:255',
+            'description'     => 'required|string',
+        ]);
+
+        $plugin->update($data);
+
+        return redirect()->route('plugins.index')->with('success', 'Plugin updated successfully!');
     }
 
     /**
-     * Update the specified resource in storage.
+     * Delete the plugin.
      */
-    public function update(Request $request, string $id)
+    public function destroy(Plugin $plugin)
     {
-        //
+        $plugin->delete();
+        return redirect()->route('plugins.index')->with('success', 'Plugin deleted successfully!');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+    public function show(Plugin $plugin)
     {
-        //
+        // Eager load licenses and their activations
+        $plugin->load('licenses.activations');
+
+        // Fetch the latest release version from GitHub using the stored repo.
+        $githubRepo = $plugin->github_repo; // e.g., "amarasa/querycraft"
+        $githubResponse = Http::withHeaders([
+            'Accept' => 'application/vnd.github.v3+json'
+        ])->get("https://api.github.com/repos/{$githubRepo}/releases/latest");
+
+        if ($githubResponse->successful()) {
+            $releaseData = $githubResponse->json();
+            $latestVersion = ltrim($releaseData['tag_name'], 'v'); // Remove leading "v"
+        } else {
+            $latestVersion = 'N/A';
+        }
+
+        return view('admin.plugins.show', compact('plugin', 'latestVersion'));
     }
 }

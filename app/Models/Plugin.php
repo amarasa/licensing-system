@@ -9,7 +9,14 @@ class Plugin extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'slug', 'current_version'];
+    protected $fillable = [
+        'name',
+        'slug',
+        'current_version',
+        'github_repo',
+        'author',
+        'description'
+    ];
 
     public function licenses()
     {

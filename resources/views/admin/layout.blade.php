@@ -1,4 +1,3 @@
-<!-- resources/views/admin/layout.blade.php -->
 <!DOCTYPE html>
 <html lang="en">
 
@@ -6,8 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Admin Dashboard')</title>
-    <!-- Tailwind CSS is already built via Vite -->
     @vite('resources/css/app.css')
+    <!-- Toastr CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
 </head>
 
 <body class="bg-gray-100">
@@ -21,6 +21,49 @@
             @yield('content')
         </div>
     </div>
+
+    <!-- Include jQuery (required by toastr) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- SweetAlert2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Toastr JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+    <!-- Custom Script for Delete Confirmation and Toastr -->
+    <script>
+        $(document).ready(function() {
+            // Attach SweetAlert2 confirmation for delete forms with class 'delete-plugin'
+            $('.delete-plugin, .delete-license, .delete-activation').on('submit', function(e) {
+                e.preventDefault();
+                var form = this;
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "This action cannot be undone.",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+            });
+
+            // Display toastr notifications if there is a session message
+            @if(session('success'))
+            toastr.success("{{ session('success') }}");
+            @endif
+
+            @if(session('error'))
+            toastr.error("{{ session('error') }}");
+            @endif
+        });
+    </script>
+
+    @yield('scripts')
+
 </body>
 
 </html>

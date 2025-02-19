@@ -8,4 +8,4 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
-Route::post('/license/verify', [LicenseApiController::class, 'verify']);
+Route::match(['get', 'post'], '/license/verify', [LicenseApiController::class, 'verify']);

@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\Activation;
+
 
 class ActivationController extends Controller
 {
@@ -12,7 +14,9 @@ class ActivationController extends Controller
      */
     public function index()
     {
-        //
+        // Eager load the associated license (and its plugin if needed)
+        $activations = Activation::with('license')->get();
+        return view('admin.activations.index', compact('activations'));
     }
 
     /**
@@ -58,8 +62,9 @@ class ActivationController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Activation $activation)
     {
-        //
+        $activation->delete();
+        return redirect()->route('activations.index')->with('success', 'Activation record deleted successfully!');
     }
 }

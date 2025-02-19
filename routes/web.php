@@ -9,9 +9,14 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('/dashboard', function () {
+    return view('dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::prefix('admin')->group(function () {
+Route::middleware('auth')->prefix('admin')->group(function () {
     Route::resource('plugins', PluginController::class);
     Route::resource('licenses', LicenseController::class);
     Route::resource('activations', ActivationController::class);
 });
+
+require __DIR__ . '/auth.php';

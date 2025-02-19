@@ -11,6 +11,11 @@ class License extends Model
 
     protected $fillable = ['plugin_id', 'license_key', 'status', 'purchased_at', 'expires_at'];
 
+    protected $casts = [
+        'purchased_at' => 'datetime',
+        'expires_at' => 'datetime',
+    ];
+
     public function plugin()
     {
         return $this->belongsTo(Plugin::class);
