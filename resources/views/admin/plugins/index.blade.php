@@ -23,20 +23,44 @@
     <table id="plugins-table" class="min-w-full bg-white shadow rounded-lg border border-gray-200">
         <thead>
             <tr class="bg-gray-100 text-gray-700">
-                <th class="py-3 px-4 text-left border-b border-gray-200">ID</th>
                 <th class="py-3 px-4 text-left border-b border-gray-200">Name</th>
                 <th class="py-3 px-4 text-left border-b border-gray-200">Slug</th>
                 <th class="py-3 px-4 text-left border-b border-gray-200">Version</th>
+                <th class="py-3 px-4 text-left border-b border-gray-200">GitHub Repo</th>
                 <th class="py-3 px-4 text-left border-b border-gray-200">Actions</th>
             </tr>
         </thead>
         <tbody>
             @forelse ($plugins as $plugin)
+            @php
+            // Fetch GitHub release data for this plugin.
+            // In production, cache this to avoid performance issues.
+            $githubRepo = $plugin->github_repo;
+            $githubResponse = \Illuminate\Support\Facades\Http::withHeaders([
+            'Accept' => 'application/vnd.github.v3+json'
+            ])->get("https://api.github.com/repos/{$githubRepo}/releases/latest");
+
+            if ($githubResponse->successful()) {
+            $releaseData = $githubResponse->json();
+            $tag = $releaseData['tag_name'];
+            $version = ltrim($tag, 'v'); // Remove leading "v"
+            $downloadUrl = "https://github.com/{$githubRepo}/archive/refs/tags/{$tag}.zip";
+            } else {
+            $version = 'N/A';
+            $downloadUrl = '#';
+            }
+            @endphp
             <tr class="plugin-row hover:bg-gray-50">
-                <td class="py-3 px-4 border-b border-gray-200">{{ $plugin->id }}</td>
                 <td class="py-3 px-4 border-b border-gray-200 plugin-name">{{ $plugin->name }}</td>
                 <td class="py-3 px-4 border-b border-gray-200">{{ $plugin->slug }}</td>
-                <td class="py-3 px-4 border-b border-gray-200">{{ $plugin->current_version }}</td>
+                <td class="py-3 px-4 border-b border-gray-200">
+                    <a href="{{ $downloadUrl }}" target="_blank" class="text-blue-500 hover:underline">{{ $version }}</a>
+                </td>
+                <td class="py-3 px-4 border-b border-gray-200">
+                    <a href="https://github.com/{{ $plugin->github_repo }}" target="_blank" class="text-blue-500 hover:underline">
+                        {{ $plugin->github_repo }}
+                    </a>
+                </td>
                 <td class="py-3 px-4 border-b border-gray-200">
                     <a href="{{ route('plugins.show', $plugin->id) }}" class="text-green-500 hover:underline">View</a>
                     <form action="{{ route('plugins.destroy', $plugin->id) }}" method="POST" class="inline-block ml-2 delete-plugin">

@@ -74,18 +74,18 @@ class PluginController extends Controller
 
     public function show(Plugin $plugin)
     {
-        // Eager load licenses and their activations
+        // Eager load licenses and their activations.
         $plugin->load('licenses.activations');
 
         // Fetch the latest release version from GitHub using the stored repo.
-        $githubRepo = $plugin->github_repo; // e.g., "amarasa/querycraft"
-        $githubResponse = Http::withHeaders([
+        $githubRepo = $plugin->github_repo;
+        $githubResponse = \Illuminate\Support\Facades\Http::withHeaders([
             'Accept' => 'application/vnd.github.v3+json'
         ])->get("https://api.github.com/repos/{$githubRepo}/releases/latest");
 
         if ($githubResponse->successful()) {
             $releaseData = $githubResponse->json();
-            $latestVersion = ltrim($releaseData['tag_name'], 'v'); // Remove leading "v"
+            $latestVersion = ltrim($releaseData['tag_name'], 'v');
         } else {
             $latestVersion = 'N/A';
         }
