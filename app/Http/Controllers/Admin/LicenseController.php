@@ -29,13 +29,13 @@ class LicenseController extends Controller
     // Store a new license
     public function store(Request $request)
     {
-        // Validate input data; no status field is expected from the form
         $data = $request->validate([
             'plugin_id'   => 'required|exists:plugins,id',
             'license_key' => 'required|string|unique:licenses,license_key',
+            'domain_limit' => 'required|integer|min:0',  // 0 for unlimited, or a positive number
         ]);
 
-        // Automatically set new licenses as active
+        // Automatically set new licenses as active.
         $data['status'] = 'active';
         $data['purchased_at'] = now();
 
@@ -43,6 +43,7 @@ class LicenseController extends Controller
 
         return redirect()->route('licenses.index')->with('success', 'License created successfully!');
     }
+
 
     /**
      * Display the specified resource.
