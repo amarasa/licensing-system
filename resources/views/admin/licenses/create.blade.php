@@ -49,6 +49,10 @@
                     class="absolute text-sm text-gray-500 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white px-2 peer-focus:scale-75 peer-focus:-translate-y-4">
                     License Key
                 </label>
+                <!-- Generate New Key Button -->
+                <button type="button" id="generate-key" class="mt-2 inline-block px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700">
+                    Generate New Key
+                </button>
             </div>
 
             <!-- Domain Limit Input with Unlimited Checkbox -->
@@ -93,6 +97,28 @@
                 domainInput.value = 1; // Reset to a default non-zero value
             }
         }
+    }
+
+    // Generate a new UUID key for the license.
+    document.getElementById('generate-key').addEventListener('click', function() {
+        var licenseInput = document.getElementById('license_key');
+        // Use crypto.randomUUID() if available.
+        if (window.crypto && crypto.randomUUID) {
+            licenseInput.value = crypto.randomUUID();
+        } else {
+            // Fallback: generate a UUID using a simple function.
+            licenseInput.value = generateUUID();
+        }
+    });
+
+    // Fallback UUID generation function (v4 UUID)
+    function generateUUID() {
+        // Courtesy of https://stackoverflow.com/a/2117523/1234621
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            var r = Math.random() * 16 | 0,
+                v = c === 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
     }
 </script>
 @endsection
