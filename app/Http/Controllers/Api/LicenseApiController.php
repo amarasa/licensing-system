@@ -220,7 +220,7 @@ class LicenseApiController extends Controller
 
     public function deactivateLicense(Request $request)
     {
-        // Validate the incoming request data.
+        // Validate incoming request data.
         $data = $request->validate([
             'license_key' => 'required|string',
             'plugin_slug' => 'required|string',
@@ -233,7 +233,7 @@ class LicenseApiController extends Controller
             return response()->json(['error' => 'Plugin not found'], 404);
         }
 
-        // Retrieve the license associated with the plugin.
+        // Retrieve the license associated with this plugin.
         $license = \App\Models\License::where('license_key', $data['license_key'])
             ->where('plugin_id', $plugin->id)
             ->first();
@@ -247,23 +247,20 @@ class LicenseApiController extends Controller
         // Parse the provided domain's host.
         $providedDomain = strtolower(parse_url($data['domain'], PHP_URL_HOST));
 
-        // Retrieve the activation for this domain.
-        $activation = $license->activations()->whereRaw("LOWER(parse_url(domain, 'HOST')) = ?", [$providedDomain])->first();
-        // Alternatively, if your activations store full URLs and you need to parse them manually:
-        if (!$activation) {
-            // Fallback: loop through activations and compare hosts.
-            $activation = $license->activations->first(function ($act) use ($providedDomain) {
-                $host = strtolower(parse_url($act->domain, PHP_URL_HOST));
-                return $host === $providedDomain;
-            });
-        }
+        // Retrieve all activations for this license.
+        $activations = $license->activations()->get();
 
-        // If the activation record does not exist, return an error.
+        // Find the activation whose domain host matches the provided domain.
+        $activation = $activations->first(function ($act) use ($providedDomain) {
+            $host = strtolower(parse_url($act->domain, PHP_URL_HOST));
+            return $host === $providedDomain;
+        });
+
         if (!$activation) {
             return response()->json(['error' => 'Domain is not activated under this license'], 404);
         }
 
-        // Remove the activation record.
+        // Delete the activation record.
         $activation->delete();
 
         return response()->json(['message' => 'License deactivated successfully'], 200);
