@@ -6,7 +6,10 @@
 <div class="max-w-2xl mx-auto">
     <div class="mb-8">
         <h1 class="text-3xl font-bold text-gray-800">Create New License</h1>
-        <p class="mt-2 text-gray-600">Fill in the details to add a new license. Note: A value of 0 means unlimited production domains.</p>
+        <p class="mt-2 text-gray-600">
+            Fill in the details to add a new license. Note: Enter the number of production domains allowed.
+            Setting it to 0 means Unlimited.
+        </p>
     </div>
 
     @if ($errors->any())
@@ -50,15 +53,20 @@
 
             <!-- Domain Limit Input with Unlimited Checkbox -->
             <div>
-                <label for="domain_limit" class="block text-sm font-medium text-gray-700">Allowed Production Domains</label>
+                <label for="domain_limit" class="block text-sm font-medium text-gray-700">
+                    Allowed Production Domains
+                </label>
                 <div class="mt-1 flex items-center space-x-4">
-                    <input type="number" id="domain_limit" name="domain_limit" value="{{ old('domain_limit', 1) }}" min="1" class="block w-32 border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500">
+                    <input type="number" id="domain_limit" name="domain_limit" value="{{ old('domain_limit', 1) }}" min="0"
+                        class="block w-32 border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500">
                     <label class="inline-flex items-center">
                         <input type="checkbox" id="unlimited-domains" class="form-checkbox" onclick="toggleDomainLimit()">
                         <span class="ml-2 text-sm text-gray-600">Unlimited</span>
                     </label>
                 </div>
-                <p class="mt-1 text-sm text-gray-500">Enter the number of production domains allowed. Check "Unlimited" to allow any number (development domains won’t count).</p>
+                <p class="mt-1 text-sm text-gray-500">
+                    Enter the number of production domains allowed. Check "Unlimited" to allow any number (development domains won’t count).
+                </p>
             </div>
 
             <div class="flex justify-end">
@@ -77,12 +85,12 @@
         var checkbox = document.getElementById('unlimited-domains');
         var domainInput = document.getElementById('domain_limit');
         if (checkbox.checked) {
-            domainInput.disabled = true;
-            domainInput.value = 0;
+            domainInput.readOnly = true; // Make input read-only so value is preserved
+            domainInput.value = 0; // Set value to 0 for unlimited
         } else {
-            domainInput.disabled = false;
+            domainInput.readOnly = false; // Allow editing
             if (domainInput.value == 0) {
-                domainInput.value = 1;
+                domainInput.value = 1; // Reset to a default non-zero value
             }
         }
     }
