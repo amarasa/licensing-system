@@ -217,4 +217,55 @@ class LicenseApiController extends Controller
 
         return response()->json(['message' => 'License key is valid'], 200);
     }
+
+    public function deactivateLicense(Request $request)
+    {
+        // Validate the incoming request data.
+        $data = $request->validate([
+            'license_key' => 'required|string',
+            'plugin_slug' => 'required|string',
+            'domain'      => 'required|url',
+        ]);
+
+        // Retrieve the plugin by its slug.
+        $plugin = \App\Models\Plugin::where('slug', $data['plugin_slug'])->first();
+        if (!$plugin) {
+            return response()->json(['error' => 'Plugin not found'], 404);
+        }
+
+        // Retrieve the license associated with the plugin.
+        $license = \App\Models\License::where('license_key', $data['license_key'])
+            ->where('plugin_id', $plugin->id)
+            ->first();
+        if (!$license) {
+            return response()->json(['error' => 'License key is invalid'], 404);
+        }
+        if ($license->status !== 'active') {
+            return response()->json(['error' => 'License is not active'], 403);
+        }
+
+        // Parse the provided domain's host.
+        $providedDomain = strtolower(parse_url($data['domain'], PHP_URL_HOST));
+
+        // Retrieve the activation for this domain.
+        $activation = $license->activations()->whereRaw("LOWER(parse_url(domain, 'HOST')) = ?", [$providedDomain])->first();
+        // Alternatively, if your activations store full URLs and you need to parse them manually:
+        if (!$activation) {
+            // Fallback: loop through activations and compare hosts.
+            $activation = $license->activations->first(function ($act) use ($providedDomain) {
+                $host = strtolower(parse_url($act->domain, PHP_URL_HOST));
+                return $host === $providedDomain;
+            });
+        }
+
+        // If the activation record does not exist, return an error.
+        if (!$activation) {
+            return response()->json(['error' => 'Domain is not activated under this license'], 404);
+        }
+
+        // Remove the activation record.
+        $activation->delete();
+
+        return response()->json(['message' => 'License deactivated successfully'], 200);
+    }
 }

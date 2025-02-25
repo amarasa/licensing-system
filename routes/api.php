@@ -10,3 +10,4 @@ Route::get('/user', function (Request $request) {
 
 Route::match(['get', 'post'], '/license/verify', [LicenseApiController::class, 'verify']);
 Route::match(['get', 'post'], '/license/validate', [LicenseApiController::class, 'validateLicense']);
+Route::match(['get', 'post'], '/license/deactivate', [LicenseApiController::class, 'deactivateLicense']);
