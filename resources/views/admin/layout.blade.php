@@ -14,12 +14,24 @@
 
 <body class="bg-gray-100">
     <div class="container mx-auto p-4">
-        <nav class="mb-4">
-            <a href="{{ url('/admin/plugins') }}" class="text-blue-500 hover:underline">Plugins</a>
-            <a href="{{ url('/admin/licenses') }}" class="ml-4 text-blue-500 hover:underline">Licenses</a>
-            <a href="{{ url('/admin/activations') }}" class="ml-4 text-blue-500 hover:underline">Activations</a>
-            <a href="{{ route('settings.index') }}" class="ml-4 text-blue-500 hover:underline">Settings</a>
+        <nav class="mb-4 flex items-center justify-between">
+            <div>
+                <!-- Existing nav links on the left -->
+                <a href="{{ url('/admin/plugins') }}" class="text-blue-500 hover:underline">Plugins</a>
+                <a href="{{ url('/admin/licenses') }}" class="ml-4 text-blue-500 hover:underline">Licenses</a>
+                <a href="{{ url('/admin/activations') }}" class="ml-4 text-blue-500 hover:underline">Activations</a>
+                <a href="{{ route('settings.index') }}" class="ml-4 text-blue-500 hover:underline">Settings</a>
+            </div>
 
+            <!-- Logout Button on the Right -->
+            <div>
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">
+                        Logout
+                    </button>
+                </form>
+            </div>
         </nav>
         <div class="bg-white shadow rounded p-4">
             @yield('content')
