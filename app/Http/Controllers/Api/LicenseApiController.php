@@ -97,7 +97,8 @@ class LicenseApiController extends Controller
             : Carbon::parse($activation->activated_at);
 
         // Fetch the latest release data from GitHub dynamically using the plugin's GitHub repo.
-        $githubRepo = $plugin->github_repo; // e.g., "amarasa/querycraft"
+        // Fetch the latest release data from GitHub dynamically using the plugin's GitHub repo.
+        $githubRepo = $plugin->github_repo; // e.g., "amarasa/complete-mortgage-theme"
         $githubResponse = Http::withHeaders([
             'Accept' => 'application/vnd.github.v3+json'
         ])->get("https://api.github.com/repos/{$githubRepo}/releases/latest");
@@ -110,11 +111,13 @@ class LicenseApiController extends Controller
         $downloadUrl = "https://github.com/{$githubRepo}/archive/refs/tags/{$tag}.zip";
         $releaseVersion = ltrim($tag, 'v');
 
-        // Build update metadata with required top-level keys.
+        // Build update metadata with the new fields.
         $updateData = [
             'name'         => $plugin->name,
             'version'      => $releaseVersion,
+            'new_version'  => $releaseVersion,
             'download_url' => $downloadUrl,
+            'details_url'  => "https://github.com/{$githubRepo}/",
             'sections'     => [
                 'changelog'   => $releaseData['body'] ?? 'No changelog provided.',
                 'description' => $plugin->description,
