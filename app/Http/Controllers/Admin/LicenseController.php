@@ -33,6 +33,7 @@ class LicenseController extends Controller
             'plugin_id'   => 'required|exists:plugins,id',
             'license_key' => 'required|string|unique:licenses,license_key',
             'domain_limit' => 'required|integer|min:0',  // 0 for unlimited, or a positive number
+            'note'         => 'nullable|string',
         ]);
 
         // Automatically set new licenses as active.

@@ -55,6 +55,16 @@
                 </button>
             </div>
 
+            <!-- New Note Field -->
+            <div class="relative">
+                <textarea id="note" name="note" placeholder=" " rows="4"
+                    class="block px-2.5 pb-2.5 pt-4 w-full text-sm text-gray-900 bg-transparent rounded-lg border border-gray-300 focus:outline-none focus:ring-0 focus:border-blue-600 peer">{{ old('note') }}</textarea>
+                <label for="note"
+                    class="absolute text-sm text-gray-500 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white px-2 peer-focus:scale-75 peer-focus:-translate-y-4">
+                    Note (Optional)
+                </label>
+            </div>
+
             <!-- Domain Limit Input with Unlimited Checkbox -->
             <div>
                 <label for="domain_limit" class="block text-sm font-medium text-gray-700">
@@ -113,7 +123,6 @@
 
     // Fallback UUID generation function (v4 UUID)
     function generateUUID() {
-        // Courtesy of https://stackoverflow.com/a/2117523/1234621
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
             var r = Math.random() * 16 | 0,
                 v = c === 'x' ? r : (r & 0x3 | 0x8);

@@ -10,6 +10,9 @@
         <strong>Activation Limit:</strong>
         {{ $license->domain_limit == 0 ? 'Unlimited' : $license->domain_limit }}
     </p>
+    <p class="mt-2 text-gray-600">
+        <strong>Note:</strong> {{ $license->note ? $license->note : 'No note provided.' }}
+    </p>
 </div>
 
 <div class="mb-8 border border-gray-200 rounded p-4">

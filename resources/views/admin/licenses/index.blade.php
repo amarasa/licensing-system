@@ -58,9 +58,13 @@
                 <td class="py-3 px-4 border-b border-gray-200">
                     {{ $activatedAt }}
                 </td>
-                <!-- Actions: Only the Delete button -->
-                <td class="py-3 px-4 border-b border-gray-200">
-                    <form action="{{ route('licenses.destroy', $license->id) }}" method="POST" class="inline-block ml-2 delete-license">
+                <!-- Actions: Note icon and Delete -->
+                <td class="py-3 px-4 border-b border-gray-200 flex items-center">
+                    <!-- Note Icon -->
+                    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAbElEQVR4nO2UQQqAMAwE93vFR6Vvtf5jvehNYjZaqdCBvWUzEEqBicgCYAPAZBqA4gnag+U8snqCcygL7/qfCxjMuAKV8QR0zvEPgcqrAgZeVReB9RRYtJQRmFJSBRbspL7rCoEiSqqyfIIrdo3LoZOlEhZfAAAAAElFTkSuQmCC"
+                        alt="note" class="note-icon mr-2 cursor-pointer" data-note="{{ $license->note ?? '' }}">
+                    <!-- Delete Button -->
+                    <form action="{{ route('licenses.destroy', $license->id) }}" method="POST" class="inline-block">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="text-red-500 hover:underline">
@@ -81,7 +85,7 @@
 
 @section('scripts')
 <script>
-    // Live search: filter rows based on license key or plugin name.
+    // Live search: filter rows based on license key, plugin name, or activation domains.
     document.getElementById('license-search').addEventListener('keyup', function() {
         let searchTerm = this.value.toLowerCase();
         let rows = document.querySelectorAll('.license-row');
@@ -92,6 +96,21 @@
             row.style.display = (licenseKey.indexOf(searchTerm) > -1 || pluginName.indexOf(searchTerm) > -1 || allDomains.indexOf(searchTerm) > -1) ?
                 '' :
                 'none';
+        });
+    });
+
+    // When a note icon is clicked, show a SweetAlert2 popup with the note.
+    document.querySelectorAll('.note-icon').forEach(function(icon) {
+        icon.addEventListener('click', function() {
+            let note = this.getAttribute('data-note');
+            if (!note) {
+                note = 'No note provided.';
+            }
+            Swal.fire({
+                title: 'License Note',
+                html: note,
+                icon: 'info'
+            });
         });
     });
 </script>

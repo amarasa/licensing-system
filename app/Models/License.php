@@ -9,7 +9,7 @@ class License extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['plugin_id', 'license_key', 'status', 'purchased_at', 'expires_at', 'domain_limit'];
+    protected $fillable = ['plugin_id', 'license_key', 'status', 'purchased_at', 'expires_at', 'domain_limit', 'note'];
 
     protected $casts = [
         'purchased_at' => 'datetime',
