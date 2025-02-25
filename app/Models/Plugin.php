@@ -15,7 +15,8 @@ class Plugin extends Model
         'current_version',
         'github_repo',
         'author',
-        'description'
+        'description',
+        'type' // New field to denote "plugin" or "theme"
     ];
 
     public function licenses()

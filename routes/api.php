@@ -9,3 +9,4 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 Route::match(['get', 'post'], '/license/verify', [LicenseApiController::class, 'verify']);
+Route::match(['get', 'post'], '/license/validate', [LicenseApiController::class, 'validateLicense']);
