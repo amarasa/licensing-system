@@ -4,9 +4,16 @@ use App\Http\Controllers\Admin\PluginController;
 use App\Http\Controllers\Admin\LicenseController;
 use App\Http\Controllers\Admin\ActivationController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ProfileController;
+
 
 Route::get('/', function () {
     return view('welcome');
+});
+
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
 });
 
 Route::get('/dashboard', function () {
